@@ -1,21 +1,23 @@
-import { HydratedDocument, Types } from 'mongoose';
-export type CommandDocument = HydratedDocument<Command>;
+import * as mongoose from 'mongoose';
+export type UserDocument = Command & Document;
 export declare class Command {
     companyId: string;
     clientId: string;
-    answers: Record<string, any>;
-    qrCodeUrl: string;
+    situation: string;
     status: string;
-    amount: number;
+    advancedAmount: number;
+    city: string;
+    price: number;
     StartDate: Date;
     endDate: Date;
+    qrCodeUrl: string;
 }
-export declare const CommandSchema: import("mongoose").Schema<Command, import("mongoose").Model<Command, any, any, any, import("mongoose").Document<unknown, any, Command> & Command & {
-    _id: Types.ObjectId;
+export declare const CommandSchema: mongoose.Schema<Command, mongoose.Model<Command, any, any, any, mongoose.Document<unknown, any, Command> & Command & {
+    _id: mongoose.Types.ObjectId;
 } & {
     __v: number;
-}, any>, {}, {}, {}, {}, import("mongoose").DefaultSchemaOptions, Command, import("mongoose").Document<unknown, {}, import("mongoose").FlatRecord<Command>> & import("mongoose").FlatRecord<Command> & {
-    _id: Types.ObjectId;
+}, any>, {}, {}, {}, {}, mongoose.DefaultSchemaOptions, Command, mongoose.Document<unknown, {}, mongoose.FlatRecord<Command>> & mongoose.FlatRecord<Command> & {
+    _id: mongoose.Types.ObjectId;
 } & {
     __v: number;
 }>;

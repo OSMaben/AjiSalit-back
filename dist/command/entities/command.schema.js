@@ -11,34 +11,38 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CommandSchema = exports.Command = void 0;
 const mongoose_1 = require("@nestjs/mongoose");
-const mongoose_2 = require("mongoose");
+const mongoose = require("mongoose");
 let Command = class Command {
 };
 exports.Command = Command;
 __decorate([
-    (0, mongoose_1.Prop)({ type: mongoose_2.Types.ObjectId, ref: 'Company', required: true }),
+    (0, mongoose_1.Prop)({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }] }),
     __metadata("design:type", String)
 ], Command.prototype, "companyId", void 0);
 __decorate([
-    (0, mongoose_1.Prop)({ type: mongoose_2.Types.ObjectId, ref: 'User', required: true }),
+    (0, mongoose_1.Prop)({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }),
     __metadata("design:type", String)
 ], Command.prototype, "clientId", void 0);
 __decorate([
-    (0, mongoose_1.Prop)({ type: Object, required: true }),
-    __metadata("design:type", Object)
-], Command.prototype, "answers", void 0);
-__decorate([
-    (0, mongoose_1.Prop)(),
+    (0, mongoose_1.Prop)({ required: true, default: "غير خالص", enum: ["خالص", "غير خالص", "تسبيق"] }),
     __metadata("design:type", String)
-], Command.prototype, "qrCodeUrl", void 0);
+], Command.prototype, "situation", void 0);
 __decorate([
-    (0, mongoose_1.Prop)({ required: true, enum: ['pending', 'in-progress', 'ready', 'delivered'] }),
+    (0, mongoose_1.Prop)({ required: true, default: "قيد الانتظار", enum: ["في طور الانجاز", "قيد الانتظار", "جاهزة للتسليم", "تم تسليم"] }),
     __metadata("design:type", String)
 ], Command.prototype, "status", void 0);
 __decorate([
+    (0, mongoose_1.Prop)({ required: false }),
+    __metadata("design:type", Number)
+], Command.prototype, "advancedAmount", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ reauired: true }),
+    __metadata("design:type", String)
+], Command.prototype, "city", void 0);
+__decorate([
     (0, mongoose_1.Prop)({ required: true }),
     __metadata("design:type", Number)
-], Command.prototype, "amount", void 0);
+], Command.prototype, "price", void 0);
 __decorate([
     (0, mongoose_1.Prop)({ required: true }),
     __metadata("design:type", Date)
@@ -47,6 +51,10 @@ __decorate([
     (0, mongoose_1.Prop)({ required: true }),
     __metadata("design:type", Date)
 ], Command.prototype, "endDate", void 0);
+__decorate([
+    (0, mongoose_1.Prop)(),
+    __metadata("design:type", String)
+], Command.prototype, "qrCodeUrl", void 0);
 exports.Command = Command = __decorate([
     (0, mongoose_1.Schema)()
 ], Command);
