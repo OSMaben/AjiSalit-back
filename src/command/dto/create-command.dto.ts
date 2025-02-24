@@ -1,1 +1,3 @@
-export class CreateCommandDto {}
+export class CreateCommandDto {
+    
+}

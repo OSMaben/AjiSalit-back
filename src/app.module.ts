@@ -9,8 +9,10 @@ import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
-    MongooseModule.forRoot('mongodb://localhost:27017/Aji-Salit'),
+    ConfigModule.forRoot({
+      envFilePath: '.env',
+      isGlobal: true }),
+    MongooseModule.forRoot(process.env.MONGO_URL),
     CompanyModule,
     CommandModule,
     UserModule,

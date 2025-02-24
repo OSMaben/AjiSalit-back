@@ -20,8 +20,11 @@ exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
         imports: [
-            config_1.ConfigModule.forRoot({ isGlobal: true }),
-            mongoose_1.MongooseModule.forRoot('mongodb://localhost:27017/Aji-Salit'),
+            config_1.ConfigModule.forRoot({
+                envFilePath: '.env',
+                isGlobal: true
+            }),
+            mongoose_1.MongooseModule.forRoot(process.env.MONGO_URL),
             company_module_1.CompanyModule,
             command_module_1.CommandModule,
             user_module_1.UserModule,
