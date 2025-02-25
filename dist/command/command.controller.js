@@ -17,12 +17,25 @@ const common_1 = require("@nestjs/common");
 const command_service_1 = require("./command.service");
 const create_command_dto_1 = require("./dto/create-command.dto");
 const update_command_dto_1 = require("./dto/update-command.dto");
+const verifyJwt_1 = require("../services/verifyJwt");
 let CommandController = class CommandController {
     constructor(commandService) {
         this.commandService = commandService;
     }
-    create(createCommandDto) {
-        return this.commandService.create(createCommandDto);
+    create(createCommandDto, req) {
+        try {
+            let token = req.headers['authorization'];
+            let infoUser = (0, verifyJwt_1.validateJwt)(token);
+            if (!infoUser) {
+                throw new common_1.NotFoundException("حاول تسجل مرة أخرى");
+            }
+            const authentificatedId = infoUser.id;
+            return this.commandService.create(createCommandDto, authentificatedId);
+        }
+        catch (e) {
+            console.log(e);
+            throw new common_1.BadRequestException('Try to login again');
+        }
     }
     findAll() {
         return this.commandService.findAll();
@@ -41,8 +54,9 @@ exports.CommandController = CommandController;
 __decorate([
     (0, common_1.Post)(),
     __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [create_command_dto_1.CreateCommandDto]),
+    __metadata("design:paramtypes", [create_command_dto_1.CreateCommandDto, Object]),
     __metadata("design:returntype", void 0)
 ], CommandController.prototype, "create", null);
 __decorate([

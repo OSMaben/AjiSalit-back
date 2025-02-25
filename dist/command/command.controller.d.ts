@@ -4,7 +4,11 @@ import { UpdateCommandDto } from './dto/update-command.dto';
 export declare class CommandController {
     private readonly commandService;
     constructor(commandService: CommandService);
-    create(createCommandDto: CreateCommandDto): string;
+    create(createCommandDto: CreateCommandDto, req: any): (import("mongoose").Document<unknown, {}, import("./entities/command.schema").CommandDocument> & import("./entities/command.schema").Command & import("mongoose").Document<unknown, any, any> & Required<{
+        _id: unknown;
+    }> & {
+        __v: number;
+    }) | "تأكد من الحالة، مبلغ ديال تسبيق كيتستعمل غير فحالة التسبيق" | "مبلغ التسبيق خاص اكون صغر من المبلغ الاجمالي، تأكد مرة أخرى" | "تاريخ ماشي صحيح تأكد مرة أخرى" | "valide" | "حاول مرة خرى";
     findAll(): string;
     findOne(id: string): string;
     update(id: string, updateCommandDto: UpdateCommandDto): string;

@@ -1,5 +1,5 @@
 import * as mongoose from 'mongoose';
-export type UserDocument = Command & Document;
+export type CommandDocument = Command & mongoose.Document;
 export declare class Command {
     companyId: string;
     clientId: string;
@@ -8,8 +8,8 @@ export declare class Command {
     advancedAmount: number;
     city: string;
     price: number;
-    StartDate: Date;
-    endDate: Date;
+    images?: string[];
+    deliveryDate: Date;
     qrCodeUrl: string;
 }
 export declare const CommandSchema: mongoose.Schema<Command, mongoose.Model<Command, any, any, any, mongoose.Document<unknown, any, Command> & Command & {

@@ -11,42 +11,52 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CreateCommandDto = void 0;
 const class_validator_1 = require("class-validator");
+const mongoose_1 = require("mongoose");
 class CreateCommandDto {
 }
 exports.CreateCommandDto = CreateCommandDto;
 __decorate([
-    (0, class_validator_1.IsNotEmpty)(),
-    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsMongoId)(),
+    __metadata("design:type", mongoose_1.Types.ObjectId)
+], CreateCommandDto.prototype, "companyId", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsMongoId)(),
+    __metadata("design:type", mongoose_1.Types.ObjectId)
+], CreateCommandDto.prototype, "userId", void 0);
+__decorate([
+    (0, class_validator_1.IsNotEmpty)({ message: "دخل تمن ديال هاد الخدمة" }),
     __metadata("design:type", Number)
 ], CreateCommandDto.prototype, "price", void 0);
 __decorate([
-    (0, class_validator_1.IsNotEmpty)(),
+    (0, class_validator_1.IsNotEmpty)({ message: "لازم دخل الحالة " }),
     (0, class_validator_1.IsEnum)(["خالص", "غير خالص", "تسبيق"]),
     __metadata("design:type", String)
 ], CreateCommandDto.prototype, "situation", void 0);
 __decorate([
+    (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsEnum)(["في طور الانجاز", "قيد الانتظار", "جاهزة للتسليم", "تم تسليم"]),
     __metadata("design:type", String)
 ], CreateCommandDto.prototype, "status", void 0);
 __decorate([
-    (0, class_validator_1.IsNumber)(),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Number)
 ], CreateCommandDto.prototype, "advancedAmount", void 0);
 __decorate([
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsNotEmpty)(),
+    (0, class_validator_1.IsNotEmpty)({ message: "دخل المدينة" }),
+    (0, class_validator_1.IsString)({ message: "دخل  إسم المدينة صحيح" }),
     __metadata("design:type", String)
 ], CreateCommandDto.prototype, "city", void 0);
 __decorate([
-    (0, class_validator_1.IsDate)(),
-    (0, class_validator_1.IsNotEmpty)(),
-    __metadata("design:type", Date)
+    (0, class_validator_1.IsDateString)({}, { message: "تاريخ خاص اكون بحال YYYY-MM-DD" }),
+    (0, class_validator_1.IsNotEmpty)({ message: "دخل تاريخ التسليم" }),
+    __metadata("design:type", String)
 ], CreateCommandDto.prototype, "deliveryDate", void 0);
 __decorate([
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", String)
-], CreateCommandDto.prototype, "image", void 0);
+    __metadata("design:type", Array)
+], CreateCommandDto.prototype, "images", void 0);
 //# sourceMappingURL=create-command.dto.js.map

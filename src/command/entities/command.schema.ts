@@ -1,13 +1,15 @@
 import { Prop, Schema, SchemaFactory,} from '@nestjs/mongoose';
 import * as  mongoose from 'mongoose';
+import { Document } from 'mongoose';
 
-export type UserDocument = Command & Document;
+
+export type CommandDocument = Command & mongoose.Document;
 @Schema()
 export class Command {
   @Prop({type: [{type : mongoose.Schema.Types.ObjectId, ref:'User'}] })
   companyId: string;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId,ref: 'User', required: true }) 
+  @Prop({ type: mongoose.Schema.Types.ObjectId,ref: 'User', required: false, default:null }) 
   clientId: string;
   
   @Prop({required: true, default: "غير خالص", enum: ["خالص", "غير خالص","تسبيق"]})
@@ -16,23 +18,24 @@ export class Command {
   @Prop({ required: true, default:"قيد الانتظار", enum: ["في طور الانجاز","قيد الانتظار", "جاهزة للتسليم", "تم تسليم"] })
   status: string;
   
-  @Prop({ required: false})
+  @Prop({ required: false, default:null})
   advancedAmount:number;
 
-  @Prop({reauired: true})
+  @Prop({required: true})
   city:string;
 
   @Prop({ required: true })
   price: number; 
 
-  @Prop({ required: true })
-  StartDate: Date;
+  @Prop({ required: false})
+  images?: string[];
 
   @Prop({ required: true })
-  endDate: Date;
+  deliveryDate: Date;
 
-  @Prop()
+  @Prop({required:false, default: null})
   qrCodeUrl: string;
+
 
 }
 

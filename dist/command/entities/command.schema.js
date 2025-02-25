@@ -20,7 +20,7 @@ __decorate([
     __metadata("design:type", String)
 ], Command.prototype, "companyId", void 0);
 __decorate([
-    (0, mongoose_1.Prop)({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }),
+    (0, mongoose_1.Prop)({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false, default: null }),
     __metadata("design:type", String)
 ], Command.prototype, "clientId", void 0);
 __decorate([
@@ -32,11 +32,11 @@ __decorate([
     __metadata("design:type", String)
 ], Command.prototype, "status", void 0);
 __decorate([
-    (0, mongoose_1.Prop)({ required: false }),
+    (0, mongoose_1.Prop)({ required: false, default: null }),
     __metadata("design:type", Number)
 ], Command.prototype, "advancedAmount", void 0);
 __decorate([
-    (0, mongoose_1.Prop)({ reauired: true }),
+    (0, mongoose_1.Prop)({ required: true }),
     __metadata("design:type", String)
 ], Command.prototype, "city", void 0);
 __decorate([
@@ -44,15 +44,15 @@ __decorate([
     __metadata("design:type", Number)
 ], Command.prototype, "price", void 0);
 __decorate([
-    (0, mongoose_1.Prop)({ required: true }),
-    __metadata("design:type", Date)
-], Command.prototype, "StartDate", void 0);
+    (0, mongoose_1.Prop)({ required: false }),
+    __metadata("design:type", Array)
+], Command.prototype, "images", void 0);
 __decorate([
     (0, mongoose_1.Prop)({ required: true }),
     __metadata("design:type", Date)
-], Command.prototype, "endDate", void 0);
+], Command.prototype, "deliveryDate", void 0);
 __decorate([
-    (0, mongoose_1.Prop)(),
+    (0, mongoose_1.Prop)({ required: false, default: null }),
     __metadata("design:type", String)
 ], Command.prototype, "qrCodeUrl", void 0);
 exports.Command = Command = __decorate([
