@@ -12,10 +12,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CreateCommandDto = void 0;
 const class_validator_1 = require("class-validator");
 const mongoose_1 = require("mongoose");
+const swagger_1 = require("@nestjs/swagger");
 class CreateCommandDto {
 }
 exports.CreateCommandDto = CreateCommandDto;
 __decorate([
+    (0, swagger_1.ApiProperty)({
+        example: '67bda9260433e5b76e39de06',
+        required: true
+    }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsMongoId)(),
     __metadata("design:type", mongoose_1.Types.ObjectId)
@@ -26,30 +31,54 @@ __decorate([
     __metadata("design:type", mongoose_1.Types.ObjectId)
 ], CreateCommandDto.prototype, "userId", void 0);
 __decorate([
+    (0, swagger_1.ApiProperty)({
+        example: '50000',
+        required: true
+    }),
     (0, class_validator_1.IsNotEmpty)({ message: "دخل تمن ديال هاد الخدمة" }),
     __metadata("design:type", Number)
 ], CreateCommandDto.prototype, "price", void 0);
 __decorate([
+    (0, swagger_1.ApiProperty)({
+        example: "تسبيق",
+        required: true
+    }),
     (0, class_validator_1.IsNotEmpty)({ message: "لازم دخل الحالة " }),
     (0, class_validator_1.IsEnum)(["خالص", "غير خالص", "تسبيق"]),
     __metadata("design:type", String)
 ], CreateCommandDto.prototype, "situation", void 0);
 __decorate([
+    (0, swagger_1.ApiProperty)({
+        example: "قيد الانتظار",
+        required: true
+    }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsEnum)(["في طور الانجاز", "قيد الانتظار", "جاهزة للتسليم", "تم تسليم"]),
     __metadata("design:type", String)
 ], CreateCommandDto.prototype, "status", void 0);
 __decorate([
+    (0, swagger_1.ApiProperty)({
+        example: 2000,
+        required: false
+    }),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Number)
 ], CreateCommandDto.prototype, "advancedAmount", void 0);
 __decorate([
+    (0, swagger_1.ApiProperty)({
+        example: "rabat",
+        required: true
+    }),
     (0, class_validator_1.IsNotEmpty)({ message: "دخل المدينة" }),
     (0, class_validator_1.IsString)({ message: "دخل  إسم المدينة صحيح" }),
     __metadata("design:type", String)
 ], CreateCommandDto.prototype, "city", void 0);
 __decorate([
+    (0, swagger_1.ApiProperty)({
+        example: "2025-10-26",
+        required: true
+    }),
     (0, class_validator_1.IsDateString)({}, { message: "تاريخ خاص اكون بحال YYYY-MM-DD" }),
     (0, class_validator_1.IsNotEmpty)({ message: "دخل تاريخ التسليم" }),
     __metadata("design:type", String)

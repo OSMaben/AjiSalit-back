@@ -37,11 +37,41 @@ let CommandService = class CommandService {
         }
         catch (e) {
             console.log("ops an error", e);
-            throw new common_1.BadRequestException("Ops smth went wrong");
+            throw new common_1.BadRequestException("حاول مرة خرى");
         }
     }
-    findAll() {
-        return `This action returns all command`;
+    async scanedUserId(qrcode, userId) {
+        try {
+            const updatedCommand = await this.commandModel.findOneAndUpdate({ qrCodeUrl: qrcode }, { clientId: userId }, { new: true }).exec();
+            if (!updatedCommand)
+                return "حاول نسخQrcode مرة أخرى";
+            return "mabrouk";
+        }
+        catch (e) {
+            console.log(e);
+            throw new common_1.BadRequestException("حاول مرة خرى");
+        }
+    }
+    async findAll(userId, role) {
+        try {
+            let query = {};
+            if (role == "client") {
+                query = { clientId: userId };
+            }
+            else if (role == "company") {
+                query = { companyId: userId };
+            }
+            else {
+                console.log(userId, role);
+                return "No orders";
+            }
+            const allOrders = await this.commandModel.find(query);
+            return allOrders;
+        }
+        catch (e) {
+            console.log(e);
+            throw new common_1.BadRequestException("حاول مرة خرى");
+        }
     }
     findOne(id) {
         return `This action returns a #${id} command`;

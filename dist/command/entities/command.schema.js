@@ -16,7 +16,7 @@ let Command = class Command {
 };
 exports.Command = Command;
 __decorate([
-    (0, mongoose_1.Prop)({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }] }),
+    (0, mongoose_1.Prop)({ type: mongoose.Schema.Types.ObjectId, ref: 'User' }),
     __metadata("design:type", String)
 ], Command.prototype, "companyId", void 0);
 __decorate([

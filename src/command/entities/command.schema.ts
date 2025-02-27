@@ -6,10 +6,10 @@ import { Document } from 'mongoose';
 export type CommandDocument = Command & mongoose.Document;
 @Schema()
 export class Command {
-  @Prop({type: [{type : mongoose.Schema.Types.ObjectId, ref:'User'}] })
+  @Prop({type: mongoose.Schema.Types.ObjectId, ref:'User'})
   companyId: string;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId,ref: 'User', required: false, default:null }) 
+  @Prop({type: mongoose.Schema.Types.ObjectId,ref: 'User', required: false, default:null }) 
   clientId: string;
   
   @Prop({required: true, default: "غير خالص", enum: ["خالص", "غير خالص","تسبيق"]})

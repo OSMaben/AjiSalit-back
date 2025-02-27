@@ -11,7 +11,12 @@ export declare class CommandService {
     }> & {
         __v: number;
     }) | "تأكد من الحالة، مبلغ ديال تسبيق كيتستعمل غير فحالة التسبيق" | "مبلغ التسبيق خاص اكون صغر من المبلغ الاجمالي، تأكد مرة أخرى" | "تاريخ ماشي صحيح تأكد مرة أخرى" | "valide" | "حاول مرة خرى";
-    findAll(): string;
+    scanedUserId(qrcode: string, userId: string): Promise<"حاول نسخQrcode مرة أخرى" | "mabrouk">;
+    findAll(userId: string, role: string): Promise<"No orders" | (mongoose.Document<unknown, {}, CommandDocument> & Command & mongoose.Document<unknown, any, any> & Required<{
+        _id: unknown;
+    }> & {
+        __v: number;
+    })[]>;
     findOne(id: number): string;
     update(id: number, updateCommandDto: UpdateCommandDto): string;
     remove(id: number): string;

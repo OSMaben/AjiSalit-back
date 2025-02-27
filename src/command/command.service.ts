@@ -27,12 +27,41 @@ export class CommandService {
       return newOrder
     } catch (e) {
       console.log("ops an error",e)
-      throw new BadRequestException("Ops smth went wrong")
+      throw new BadRequestException("حاول مرة خرى")
     }
   }
 
-  findAll() {
-    return `This action returns all command`;
+  async scanedUserId(qrcode: string, userId:string){
+    try{
+      const updatedCommand = await this.commandModel.findOneAndUpdate({qrCodeUrl:qrcode},{clientId:userId},{new: true}).exec();
+      if(!updatedCommand)
+        return "حاول نسخQrcode مرة أخرى"
+      return "mabrouk";
+    }catch(e){
+      console.log(e)
+      throw new BadRequestException("حاول مرة خرى")
+    }
+
+  }
+
+  async findAll(userId :string, role: string) {
+    try{
+      let query = {}
+      if(role == "client"){
+        query = {clientId:userId}
+      }else if (role == "company"){
+        query = {companyId:userId}
+
+      }else {
+        console.log(userId, role)
+        return "No orders"
+      }
+      const allOrders = await this.commandModel.find(query)
+      return allOrders
+    }catch(e){
+      console.log(e)
+      throw new BadRequestException("حاول مرة خرى")
+    }
   }
 
   findOne(id: number) {
