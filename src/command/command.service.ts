@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from "mongoose"
 import { CreateCommandDto } from './dto/create-command.dto';
@@ -7,18 +7,25 @@ import mongoose from 'mongoose';
 import { Command, CommandDocument, } from './entities/command.schema';
 import { Type } from 'class-transformer';
 import {ValidationOrder} from "../services/validationOrder"
+import { isInstance } from 'class-validator';
 
 @Injectable()
 export class CommandService {
   constructor(
     @InjectModel(Command.name) private commandModel: Model<CommandDocument>,
   ) { }
-  create(createCommandDto: CreateCommandDto, authentificatedId: string) {
+  async create(createCommandDto: CreateCommandDto, authentificatedId: string) {
     try {
+      const existingOrder = await this.commandModel.findOne({qrCode : createCommandDto.qrCode}).exec();
+      if(existingOrder){
+        throw new ConflictException("هاد الكود مستعمل")
+      }
       createCommandDto.companyId = new Types.ObjectId(authentificatedId);
       let newOrder = new this.commandModel(createCommandDto);
-      if(ValidationOrder(newOrder) !== "valide"){
-        return ValidationOrder(newOrder)
+      let resultValidation = ValidationOrder(newOrder)
+      // console.log("hshshshshshsh status", resultValidation)
+      if (resultValidation !== "valide") {
+        throw new UnprocessableEntityException(resultValidation);
       }
       let savingOrder = newOrder.save()
       if(!savingOrder){
@@ -26,19 +33,32 @@ export class CommandService {
       }
       return newOrder
     } catch (e) {
-      console.log("ops an error",e)
-      throw new BadRequestException("حاول مرة خرى")
+      if (e instanceof UnprocessableEntityException) {
+        throw e;
+      }else if (e instanceof ConflictException){
+        throw e;
+      }
+      throw new BadRequestException(e.message)
     }
   }
 
   async scanedUserId(qrcode: string, userId:string){
     try{
-      const updatedCommand = await this.commandModel.findOneAndUpdate({qrCodeUrl:qrcode},{clientId:userId},{new: true}).exec();
+      const updatedCommand = await this.commandModel.findOneAndUpdate({qrCode:qrcode},{clientId:userId},{new: true}).exec();
       if(!updatedCommand)
-        return "حاول نسخQrcode مرة أخرى"
-      return "mabrouk";
+        throw new NotFoundException(" طلب مكاينش تأكد من رمز مرة أخرى")
+      if (updatedCommand.clientId === userId) {
+        throw new BadRequestException("عاود حول مسح  Qr مرة خرى");
+      }
+      return "مبروك تم مسح رمز بنجاح";
     }catch(e){
-      console.log(e)
+      // console.log(e)
+      if(e instanceof NotFoundException){
+        throw new NotFoundException(" طلب مكاينش تأكد من رمز مرة أخرى")
+      }
+      if(e instanceof BadRequestException){
+        throw new BadRequestException("عاود حول مسح  Qr مرة خرى");
+      }
       throw new BadRequestException("حاول مرة خرى")
     }
 
@@ -52,11 +72,11 @@ export class CommandService {
       }else if (role == "company"){
         query = {companyId:userId}
 
-      }else {
-        console.log(userId, role)
-        return "No orders"
       }
       const allOrders = await this.commandModel.find(query)
+      if(allOrders.length == 0){
+        return "ماكين حتا طلب"
+      }
       return allOrders
     }catch(e){
       console.log(e)

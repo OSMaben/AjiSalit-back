@@ -22,12 +22,17 @@ let CommandService = class CommandService {
     constructor(commandModel) {
         this.commandModel = commandModel;
     }
-    create(createCommandDto, authentificatedId) {
+    async create(createCommandDto, authentificatedId) {
         try {
+            const existingOrder = await this.commandModel.findOne({ qrCode: createCommandDto.qrCode }).exec();
+            if (existingOrder) {
+                throw new common_1.ConflictException("هاد الكود مستعمل");
+            }
             createCommandDto.companyId = new mongoose_2.Types.ObjectId(authentificatedId);
             let newOrder = new this.commandModel(createCommandDto);
-            if ((0, validationOrder_1.ValidationOrder)(newOrder) !== "valide") {
-                return (0, validationOrder_1.ValidationOrder)(newOrder);
+            let resultValidation = (0, validationOrder_1.ValidationOrder)(newOrder);
+            if (resultValidation !== "valide") {
+                throw new common_1.UnprocessableEntityException(resultValidation);
             }
             let savingOrder = newOrder.save();
             if (!savingOrder) {
@@ -36,19 +41,32 @@ let CommandService = class CommandService {
             return newOrder;
         }
         catch (e) {
-            console.log("ops an error", e);
-            throw new common_1.BadRequestException("حاول مرة خرى");
+            if (e instanceof common_1.UnprocessableEntityException) {
+                throw e;
+            }
+            else if (e instanceof common_1.ConflictException) {
+                throw e;
+            }
+            throw new common_1.BadRequestException(e.message);
         }
     }
     async scanedUserId(qrcode, userId) {
         try {
-            const updatedCommand = await this.commandModel.findOneAndUpdate({ qrCodeUrl: qrcode }, { clientId: userId }, { new: true }).exec();
+            const updatedCommand = await this.commandModel.findOneAndUpdate({ qrCode: qrcode }, { clientId: userId }, { new: true }).exec();
             if (!updatedCommand)
-                return "حاول نسخQrcode مرة أخرى";
-            return "mabrouk";
+                throw new common_1.NotFoundException(" طلب مكاينش تأكد من رمز مرة أخرى");
+            if (updatedCommand.clientId === userId) {
+                throw new common_1.BadRequestException("عاود حول مسح  Qr مرة خرى");
+            }
+            return "مبروك تم مسح رمز بنجاح";
         }
         catch (e) {
-            console.log(e);
+            if (e instanceof common_1.NotFoundException) {
+                throw new common_1.NotFoundException(" طلب مكاينش تأكد من رمز مرة أخرى");
+            }
+            if (e instanceof common_1.BadRequestException) {
+                throw new common_1.BadRequestException("عاود حول مسح  Qr مرة خرى");
+            }
             throw new common_1.BadRequestException("حاول مرة خرى");
         }
     }
@@ -61,11 +79,10 @@ let CommandService = class CommandService {
             else if (role == "company") {
                 query = { companyId: userId };
             }
-            else {
-                console.log(userId, role);
-                return "No orders";
-            }
             const allOrders = await this.commandModel.find(query);
+            if (allOrders.length == 0) {
+                return "ماكين حتا طلب";
+            }
             return allOrders;
         }
         catch (e) {
