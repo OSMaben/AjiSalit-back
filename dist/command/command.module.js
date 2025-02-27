@@ -10,11 +10,14 @@ exports.CommandModule = void 0;
 const common_1 = require("@nestjs/common");
 const command_service_1 = require("./command.service");
 const command_controller_1 = require("./command.controller");
+const mongoose_1 = require("@nestjs/mongoose");
+const command_schema_1 = require("./entities/command.schema");
 let CommandModule = class CommandModule {
 };
 exports.CommandModule = CommandModule;
 exports.CommandModule = CommandModule = __decorate([
     (0, common_1.Module)({
+        imports: [mongoose_1.MongooseModule.forFeature([{ name: command_schema_1.Command.name, schema: command_schema_1.CommandSchema }])],
         controllers: [command_controller_1.CommandController],
         providers: [command_service_1.CommandService],
     })
