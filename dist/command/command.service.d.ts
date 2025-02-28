@@ -17,7 +17,15 @@ export declare class CommandService {
     }> & {
         __v: number;
     })[]>;
-    findOne(id: number): string;
-    update(id: number, updateCommandDto: UpdateCommandDto): string;
-    remove(id: number): string;
+    findOne(id: string, infoUser: any): Promise<mongoose.Document<unknown, {}, CommandDocument> & Command & mongoose.Document<unknown, any, any> & Required<{
+        _id: unknown;
+    }> & {
+        __v: number;
+    }>;
+    update(authentificatedId: any, id: any, updateCommandDto: UpdateCommandDto): Promise<mongoose.Document<unknown, {}, CommandDocument> & Command & mongoose.Document<unknown, any, any> & Required<{
+        _id: unknown;
+    }> & {
+        __v: number;
+    }>;
+    deleteOrder(id: string, userId: any): Promise<string>;
 }

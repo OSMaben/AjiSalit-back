@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Req, BadRequestException, NotFoundException, UnauthorizedException, ForbiddenException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Req, BadRequestException, NotFoundException, UnauthorizedException, ForbiddenException, Put } from '@nestjs/common';
 import { CommandService } from './command.service';
 import { CreateCommandDto } from './dto/create-command.dto';
 import { UpdateCommandDto } from './dto/update-command.dto';
@@ -154,7 +154,7 @@ export class CommandController {
     description: 'Not found error: the order is not found',
     schema: {
       example: {
-        statusCode: 401,
+        statusCode: 404,
         message: "طلب مكاينش تأكد من رمز مرة أخرى",
         error: 'Not found error'
       },
@@ -272,23 +272,250 @@ export class CommandController {
       return this.commandService.findAll(infoUser.id, infoUser.role);
     }catch(e){
       console.log(e);
+      if (e instanceof JsonWebTokenError || e instanceof TokenExpiredError)
+        throw new UnauthorizedException("حاول تسجل مرة أخرى")
       throw new BadRequestException("حاول مرة خرى")
     }
 
   }
 
+
+
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.commandService.findOne(+id);
+  @ApiOperation({ summary: "The client or the company can see th details of their sepefic order" })
+  @ApiResponse({
+    status: 200,
+    description: 'The client or the company check the details of order successfully',
+    type:ResponseDto
+  })
+
+  @ApiResponse({
+    status: 400,
+    description: 'Bad Request: new exception',
+    content: {
+      'application/json': {
+        examples: {
+          "The id of an order is not valid mongodbId": {
+            value: {
+                "message": "رقم ديال طلب خطء حاول مرة أخرى",
+                "error": "Bad Request",
+                "statusCode": 400
+            },
+
+          },
+          "Something happend that can crash the app":{
+            value: "حاول مرة خرى"
+          },
+      },
+    },
+  }
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Not found exception: the order is not found',
+    schema: {
+      example:{
+        "message": "ماكين حتا طلب",
+        "error": "Not Found",
+        "statusCode": 404
+    }
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized error: the user is not logged in ',
+    schema: {
+      example: {
+        statusCode: 401,
+        message: "حاول تسجل مرة أخرى",
+        error: 'Unauthorized error',
+      },
+    },
+  })
+
+  findOne(@Param('id') id: string, @Req() req) {
+    try{
+      let token = req.headers['authorization'];
+      let infoUser = validateJwt(token);
+      console.log(infoUser)
+      if (!infoUser) {
+        throw new UnauthorizedException("حاول تسجل مرة أخرى")
+      }
+      return this.commandService.findOne(id, infoUser);
+    }catch(e){
+      if (e instanceof JsonWebTokenError || e instanceof TokenExpiredError)
+        throw new UnauthorizedException("حاول تسجل مرة أخرى")
+      throw new BadRequestException("حاول مرة خرى")
+    }
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCommandDto: UpdateCommandDto) {
-    return this.commandService.update(+id, updateCommandDto);
+  @Put(':id')
+  @ApiOperation({ summary: "The company owner can update his own order" })
+  @ApiResponse({
+    status: 200,
+    description: "The company owner can update the order successfully",
+    type: ResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized error: the user is not logged in ',
+    schema: {
+      example: {
+        statusCode: 401,
+        message: "حاول تسجل مرة أخرى",
+        error: 'Unauthorized error',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Fobidden error: Only the company owner that has an order can update it',
+    schema: {
+      example: {
+        statusCode: 403,
+        message: "ممسموحش لك تبدل هاد طلب",
+        error: 'forbidden error',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Not found exception: the order not found',
+    schema: {
+      example:{
+        "message": "طلب ديالك مكاينش",
+        "error": "Not Found",
+        "statusCode": 404
+    }
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad Request: new exception',
+    content: {
+      'application/json': {
+        examples: {
+          "The id of an order is not valid mongodbId": {
+            value: {
+                "message": "رقم ديال طلب خطء حاول مرة أخرى",
+                "error": "Bad Request",
+                "statusCode": 400
+            },
+
+          },
+          "Something happend that can crash the app":{
+            value: "حاول مرة خرى"
+          },
+      },
+    },
+  }
+  })
+  update(@Param('id') id: string, @Body() updateCommandDto: UpdateCommandDto, @Req() req) {
+    try{
+      let token = req.headers['authorization'];
+      let infoUser = validateJwt(token);
+      // console.log(infoUser)
+      if (!infoUser) {
+        throw new UnauthorizedException("حاول تسجل مرة أخرى")
+      }
+      if(infoUser.role !== "company"){
+        throw new ForbiddenException("ممسموحش لك تبدل هاد طلب")
+      }
+      return this.commandService.update(infoUser.id, id, updateCommandDto);
+
+    }catch(e){
+      console.log(e)
+      if (e instanceof JsonWebTokenError || e instanceof TokenExpiredError)
+        throw new UnauthorizedException("حاول تسجل مرة أخرى")
+      if(e instanceof ForbiddenException){
+        throw new ForbiddenException("ممسموحش لك تبدل هاد طلب")
+      }
+      throw new BadRequestException("حاول مرة خرى")
+    }
+
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.commandService.remove(+id);
+  @ApiOperation({summary:"The company order want to delete an order"})
+  @ApiResponse({
+    status: 200,
+    description: "The company owner deletes the order successfully",
+    example:"تم مسح طلب بنجاح"
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized error: the user is not logged in ',
+    schema: {
+      example: {
+        statusCode: 401,
+        message: "حاول تسجل مرة أخرى",
+        error: 'Unauthorized error',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Fobidden error: Only the company owner that has an order can delete it',
+    schema: {
+      example: {
+        statusCode: 403,
+        message: "ممسموحش لك تمسح هاد طلب",
+        error: 'forbidden error',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Not found exception: the order not found',
+    schema: {
+      example:{
+        "message": "طلب ديالك مكاينش",
+        "error": "Not Found",
+        "statusCode": 404
+    }
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad Request: new exception',
+    content: {
+      'application/json': {
+        examples: {
+          "The id of an order is not valid mongodbId": {
+            value: {
+                "message": "رقم ديال طلب خطء حاول مرة أخرى",
+                "error": "Bad Request",
+                "statusCode": 400
+            },
+
+          },
+          "Something happend that can crash the app":{
+            value: "حاول مرة خرى"
+          },
+      },
+    },
+  }
+  })
+
+  remove(@Param('id') id: string, @Req() req) {
+    try{
+      let token = req.headers['authorization'];
+      let infoUser = validateJwt(token);
+      if (!infoUser) {
+        throw new UnauthorizedException("حاول تسجل مرة أخرى")
+      }
+      if(infoUser.role !== "company"){
+        throw new ForbiddenException("ممسموحش لك تمسح هاد طلب")
+      }
+      return this.commandService.deleteOrder(id, infoUser.id);
+    }catch(e){
+      console.log(e);
+      if (e instanceof JsonWebTokenError || e instanceof TokenExpiredError)
+        throw new UnauthorizedException("حاول تسجل مرة أخرى")
+      if(e instanceof ForbiddenException){
+        throw new ForbiddenException("ممسموحش لك تبدل هاد طلب")
+      }
+      throw new BadRequestException("حاول مرة خرى")
+    }
   }
 }

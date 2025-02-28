@@ -80,17 +80,70 @@ let CommandController = class CommandController {
         }
         catch (e) {
             console.log(e);
+            if (e instanceof jsonwebtoken_1.JsonWebTokenError || e instanceof jsonwebtoken_1.TokenExpiredError)
+                throw new common_1.UnauthorizedException("حاول تسجل مرة أخرى");
             throw new common_1.BadRequestException("حاول مرة خرى");
         }
     }
-    findOne(id) {
-        return this.commandService.findOne(+id);
+    findOne(id, req) {
+        try {
+            let token = req.headers['authorization'];
+            let infoUser = (0, verifyJwt_1.validateJwt)(token);
+            console.log(infoUser);
+            if (!infoUser) {
+                throw new common_1.UnauthorizedException("حاول تسجل مرة أخرى");
+            }
+            return this.commandService.findOne(id, infoUser);
+        }
+        catch (e) {
+            if (e instanceof jsonwebtoken_1.JsonWebTokenError || e instanceof jsonwebtoken_1.TokenExpiredError)
+                throw new common_1.UnauthorizedException("حاول تسجل مرة أخرى");
+            throw new common_1.BadRequestException("حاول مرة خرى");
+        }
     }
-    update(id, updateCommandDto) {
-        return this.commandService.update(+id, updateCommandDto);
+    update(id, updateCommandDto, req) {
+        try {
+            let token = req.headers['authorization'];
+            let infoUser = (0, verifyJwt_1.validateJwt)(token);
+            if (!infoUser) {
+                throw new common_1.UnauthorizedException("حاول تسجل مرة أخرى");
+            }
+            if (infoUser.role !== "company") {
+                throw new common_1.ForbiddenException("ممسموحش لك تبدل هاد طلب");
+            }
+            return this.commandService.update(infoUser.id, id, updateCommandDto);
+        }
+        catch (e) {
+            console.log(e);
+            if (e instanceof jsonwebtoken_1.JsonWebTokenError || e instanceof jsonwebtoken_1.TokenExpiredError)
+                throw new common_1.UnauthorizedException("حاول تسجل مرة أخرى");
+            if (e instanceof common_1.ForbiddenException) {
+                throw new common_1.ForbiddenException("ممسموحش لك تبدل هاد طلب");
+            }
+            throw new common_1.BadRequestException("حاول مرة خرى");
+        }
     }
-    remove(id) {
-        return this.commandService.remove(+id);
+    remove(id, req) {
+        try {
+            let token = req.headers['authorization'];
+            let infoUser = (0, verifyJwt_1.validateJwt)(token);
+            if (!infoUser) {
+                throw new common_1.UnauthorizedException("حاول تسجل مرة أخرى");
+            }
+            if (infoUser.role !== "company") {
+                throw new common_1.ForbiddenException("ممسموحش لك تمسح هاد طلب");
+            }
+            return this.commandService.deleteOrder(id, infoUser.id);
+        }
+        catch (e) {
+            console.log(e);
+            if (e instanceof jsonwebtoken_1.JsonWebTokenError || e instanceof jsonwebtoken_1.TokenExpiredError)
+                throw new common_1.UnauthorizedException("حاول تسجل مرة أخرى");
+            if (e instanceof common_1.ForbiddenException) {
+                throw new common_1.ForbiddenException("ممسموحش لك تبدل هاد طلب");
+            }
+            throw new common_1.BadRequestException("حاول مرة خرى");
+        }
     }
 };
 exports.CommandController = CommandController;
@@ -215,7 +268,7 @@ __decorate([
         description: 'Not found error: the order is not found',
         schema: {
             example: {
-                statusCode: 401,
+                statusCode: 404,
                 message: "طلب مكاينش تأكد من رمز مرة أخرى",
                 error: 'Not found error'
             },
@@ -309,24 +362,193 @@ __decorate([
 ], CommandController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)(':id'),
+    (0, swagger_1.ApiOperation)({ summary: "The client or the company can see th details of their sepefic order" }),
+    (0, swagger_1.ApiResponse)({
+        status: 200,
+        description: 'The client or the company check the details of order successfully',
+        type: response_command_dto_1.default
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 400,
+        description: 'Bad Request: new exception',
+        content: {
+            'application/json': {
+                examples: {
+                    "The id of an order is not valid mongodbId": {
+                        value: {
+                            "message": "رقم ديال طلب خطء حاول مرة أخرى",
+                            "error": "Bad Request",
+                            "statusCode": 400
+                        },
+                    },
+                    "Something happend that can crash the app": {
+                        value: "حاول مرة خرى"
+                    },
+                },
+            },
+        }
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 404,
+        description: 'Not found exception: the order is not found',
+        schema: {
+            example: {
+                "message": "ماكين حتا طلب",
+                "error": "Not Found",
+                "statusCode": 404
+            }
+        },
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 401,
+        description: 'Unauthorized error: the user is not logged in ',
+        schema: {
+            example: {
+                statusCode: 401,
+                message: "حاول تسجل مرة أخرى",
+                error: 'Unauthorized error',
+            },
+        },
+    }),
     __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], CommandController.prototype, "findOne", null);
 __decorate([
-    (0, common_1.Patch)(':id'),
+    (0, common_1.Put)(':id'),
+    (0, swagger_1.ApiOperation)({ summary: "The company owner can update his own order" }),
+    (0, swagger_1.ApiResponse)({
+        status: 200,
+        description: "The company owner can update the order successfully",
+        type: response_command_dto_1.default,
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 401,
+        description: 'Unauthorized error: the user is not logged in ',
+        schema: {
+            example: {
+                statusCode: 401,
+                message: "حاول تسجل مرة أخرى",
+                error: 'Unauthorized error',
+            },
+        },
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 403,
+        description: 'Fobidden error: Only the company owner that has an order can update it',
+        schema: {
+            example: {
+                statusCode: 403,
+                message: "ممسموحش لك تبدل هاد طلب",
+                error: 'forbidden error',
+            },
+        },
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 404,
+        description: 'Not found exception: the order not found',
+        schema: {
+            example: {
+                "message": "طلب ديالك مكاينش",
+                "error": "Not Found",
+                "statusCode": 404
+            }
+        },
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 400,
+        description: 'Bad Request: new exception',
+        content: {
+            'application/json': {
+                examples: {
+                    "The id of an order is not valid mongodbId": {
+                        value: {
+                            "message": "رقم ديال طلب خطء حاول مرة أخرى",
+                            "error": "Bad Request",
+                            "statusCode": 400
+                        },
+                    },
+                    "Something happend that can crash the app": {
+                        value: "حاول مرة خرى"
+                    },
+                },
+            },
+        }
+    }),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
+    __param(2, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, update_command_dto_1.UpdateCommandDto]),
+    __metadata("design:paramtypes", [String, update_command_dto_1.UpdateCommandDto, Object]),
     __metadata("design:returntype", void 0)
 ], CommandController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(':id'),
+    (0, swagger_1.ApiOperation)({ summary: "The company order want to delete an order" }),
+    (0, swagger_1.ApiResponse)({
+        status: 200,
+        description: "The company owner deletes the order successfully",
+        example: "تم مسح طلب بنجاح"
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 401,
+        description: 'Unauthorized error: the user is not logged in ',
+        schema: {
+            example: {
+                statusCode: 401,
+                message: "حاول تسجل مرة أخرى",
+                error: 'Unauthorized error',
+            },
+        },
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 403,
+        description: 'Fobidden error: Only the company owner that has an order can delete it',
+        schema: {
+            example: {
+                statusCode: 403,
+                message: "ممسموحش لك تمسح هاد طلب",
+                error: 'forbidden error',
+            },
+        },
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 404,
+        description: 'Not found exception: the order not found',
+        schema: {
+            example: {
+                "message": "طلب ديالك مكاينش",
+                "error": "Not Found",
+                "statusCode": 404
+            }
+        },
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 400,
+        description: 'Bad Request: new exception',
+        content: {
+            'application/json': {
+                examples: {
+                    "The id of an order is not valid mongodbId": {
+                        value: {
+                            "message": "رقم ديال طلب خطء حاول مرة أخرى",
+                            "error": "Bad Request",
+                            "statusCode": 400
+                        },
+                    },
+                    "Something happend that can crash the app": {
+                        value: "حاول مرة خرى"
+                    },
+                },
+            },
+        }
+    }),
     __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], CommandController.prototype, "remove", null);
 exports.CommandController = CommandController = __decorate([

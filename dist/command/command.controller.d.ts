@@ -15,7 +15,15 @@ export declare class CommandController {
     }> & {
         __v: number;
     })[]>;
-    findOne(id: string): string;
-    update(id: string, updateCommandDto: UpdateCommandDto): string;
-    remove(id: string): string;
+    findOne(id: string, req: any): Promise<import("mongoose").Document<unknown, {}, import("./entities/command.schema").CommandDocument> & import("./entities/command.schema").Command & import("mongoose").Document<unknown, any, any> & Required<{
+        _id: unknown;
+    }> & {
+        __v: number;
+    }>;
+    update(id: string, updateCommandDto: UpdateCommandDto, req: any): Promise<import("mongoose").Document<unknown, {}, import("./entities/command.schema").CommandDocument> & import("./entities/command.schema").Command & import("mongoose").Document<unknown, any, any> & Required<{
+        _id: unknown;
+    }> & {
+        __v: number;
+    }>;
+    remove(id: string, req: any): Promise<string>;
 }

@@ -1,13 +1,11 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from "mongoose"
 import { CreateCommandDto } from './dto/create-command.dto';
 import { UpdateCommandDto } from './dto/update-command.dto';
 import mongoose from 'mongoose';
 import { Command, CommandDocument, } from './entities/command.schema';
-import { Type } from 'class-transformer';
 import {ValidationOrder} from "../services/validationOrder"
-import { isInstance } from 'class-validator';
 
 @Injectable()
 export class CommandService {
@@ -84,15 +82,81 @@ export class CommandService {
     }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} command`;
+  async findOne(id : string, infoUser) {
+    try{
+        let query = {}
+        if(infoUser.role == "client"){
+          query = {clientId:infoUser.id}
+        }else if (infoUser.role == "company"){
+          query = {companyId:infoUser.id}
+        }
+        let order = await this.commandModel.findOne({_id:id, ...query}).exec()
+        if(!order){
+          throw new NotFoundException("ماكين حتا طلب")
+        }
+        return order
+      
+    }catch(e){
+      if (e.name === 'CastError') {
+        throw new BadRequestException("رقم ديال طلب خطء حاول مرة أخرى");
+      }
+      if(NotFoundException){
+        throw new NotFoundException("ماكين حتا طلب")
+      }
+      throw new BadRequestException("حاول مرة خرى")
+    }
   }
 
-  update(id: number, updateCommandDto: UpdateCommandDto) {
-    return `This action updates a #${id} command`;
+  async update(authentificatedId,id, updateCommandDto: UpdateCommandDto) {
+    try{
+      const command = await this.commandModel.findById(id).exec();
+      console.log(id, command)
+      if(!command){
+        throw new NotFoundException("طلب ديالك مكاينش")
+      }
+      if(command.companyId.toString() !==  authentificatedId){
+        throw new ForbiddenException("ممسموحش لك تبدل هاد طلب")
+      }
+      const updatedCommand = await this.commandModel.findByIdAndUpdate( id, updateCommandDto,{new: true }).exec();
+      return updatedCommand
+    }catch(e){
+      if (e.name === 'CastError') {
+        throw new BadRequestException("رقم ديال طلب خطء حاول مرة أخرى");
+      }
+      if(e instanceof NotFoundException){
+        throw new NotFoundException("طلب ديالك مكاينش")
+      }
+      if(e instanceof ForbiddenException){
+        throw new ForbiddenException("ممسموحش لك تبدل هاد طلب")
+
+      }
+      throw new BadRequestException("حاول مرة خرى")
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} command`;
+  async deleteOrder(id: string, userId) {
+    try{
+      let order = await this.commandModel.findById(id);
+      if(!order){
+        throw new NotFoundException("طلب ديالك مكاينش")
+      }
+      if(order.companyId.toString() !== userId){
+        throw new ForbiddenException("ممسموحش لك تمسح هاد طلب")
+      }
+      let deleteOrder = await this.commandModel.findByIdAndDelete(id).exec();
+      return "تم مسح طلب بنجاح"
+    }catch(e){
+      console.log("there's an error",e)
+      if (e.name === 'CastError') {
+        throw new BadRequestException("رقم ديال طلب خطء حاول مرة أخرى");
+      }
+      if(e instanceof NotFoundException){
+        throw new NotFoundException("طلب ديالك مكاينش")
+      }
+      if(e instanceof ForbiddenException){
+        throw new ForbiddenException("ممسموحش لك تمسح هاد طلب")
+      }
+      throw new BadRequestException("حاول مرة خرى")
+    }
   }
 }

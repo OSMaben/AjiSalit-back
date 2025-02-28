@@ -90,14 +90,82 @@ let CommandService = class CommandService {
             throw new common_1.BadRequestException("حاول مرة خرى");
         }
     }
-    findOne(id) {
-        return `This action returns a #${id} command`;
+    async findOne(id, infoUser) {
+        try {
+            let query = {};
+            if (infoUser.role == "client") {
+                query = { clientId: infoUser.id };
+            }
+            else if (infoUser.role == "company") {
+                query = { companyId: infoUser.id };
+            }
+            let order = await this.commandModel.findOne({ _id: id, ...query }).exec();
+            if (!order) {
+                throw new common_1.NotFoundException("ماكين حتا طلب");
+            }
+            return order;
+        }
+        catch (e) {
+            if (e.name === 'CastError') {
+                throw new common_1.BadRequestException("رقم ديال طلب خطء حاول مرة أخرى");
+            }
+            if (common_1.NotFoundException) {
+                throw new common_1.NotFoundException("ماكين حتا طلب");
+            }
+            throw new common_1.BadRequestException("حاول مرة خرى");
+        }
     }
-    update(id, updateCommandDto) {
-        return `This action updates a #${id} command`;
+    async update(authentificatedId, id, updateCommandDto) {
+        try {
+            const command = await this.commandModel.findById(id).exec();
+            console.log(id, command);
+            if (!command) {
+                throw new common_1.NotFoundException("طلب ديالك مكاينش");
+            }
+            if (command.companyId.toString() !== authentificatedId) {
+                throw new common_1.ForbiddenException("ممسموحش لك تبدل هاد طلب");
+            }
+            const updatedCommand = await this.commandModel.findByIdAndUpdate(id, updateCommandDto, { new: true }).exec();
+            return updatedCommand;
+        }
+        catch (e) {
+            if (e.name === 'CastError') {
+                throw new common_1.BadRequestException("رقم ديال طلب خطء حاول مرة أخرى");
+            }
+            if (e instanceof common_1.NotFoundException) {
+                throw new common_1.NotFoundException("طلب ديالك مكاينش");
+            }
+            if (e instanceof common_1.ForbiddenException) {
+                throw new common_1.ForbiddenException("ممسموحش لك تبدل هاد طلب");
+            }
+            throw new common_1.BadRequestException("حاول مرة خرى");
+        }
     }
-    remove(id) {
-        return `This action removes a #${id} command`;
+    async deleteOrder(id, userId) {
+        try {
+            let order = await this.commandModel.findById(id);
+            if (!order) {
+                throw new common_1.NotFoundException("طلب ديالك مكاينش");
+            }
+            if (order.companyId.toString() !== userId) {
+                throw new common_1.ForbiddenException("ممسموحش لك تمسح هاد طلب");
+            }
+            let deleteOrder = await this.commandModel.findByIdAndDelete(id).exec();
+            return "تم مسح طلب بنجاح";
+        }
+        catch (e) {
+            console.log("there's an error", e);
+            if (e.name === 'CastError') {
+                throw new common_1.BadRequestException("رقم ديال طلب خطء حاول مرة أخرى");
+            }
+            if (e instanceof common_1.NotFoundException) {
+                throw new common_1.NotFoundException("طلب ديالك مكاينش");
+            }
+            if (e instanceof common_1.ForbiddenException) {
+                throw new common_1.ForbiddenException("ممسموحش لك تمسح هاد طلب");
+            }
+            throw new common_1.BadRequestException("حاول مرة خرى");
+        }
     }
 };
 exports.CommandService = CommandService;
